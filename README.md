@@ -28,9 +28,9 @@ This bootcamp focuses on building a strong foundation in **SQL** and **Analytics
 4. **Lesson 04:** Window Functions
 5. **Lesson 05:** [Data Analysis Project](https://github.com/lvgalvao/Northwind-SQL-Analytics)
 6. **Lesson 06:** CTE vs Subqueries vs Views vs Temporary Tables vs Materialized Views
-7. **Lesson 07:** Stored Procedures
-8. **Lesson 08:** (Revisited) CTE vs Subqueries vs Views vs Temporary Tables vs Materialized Views
-9. **Lesson 09:** Triggers & Practical Project II
+7. **Lesson 07:** Table creation
+8. **Lesson 08:** Stored Procedures
+9. **Lesson 09:** [Triggers & Practical Project II](https://github.com/lvgalvao/northwind-sql-etl)
 10. **Lesson 10:** Transactions
 11. **Lesson 11:** Query Execution Order
 12. **Lesson 12:** Database Indexing
