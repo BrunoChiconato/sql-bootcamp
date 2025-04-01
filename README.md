@@ -26,7 +26,7 @@ This bootcamp focuses on building a strong foundation in **SQL** and **Analytics
 2. **Lesson 02:** SQL for Analytics - First Queries
 3. **Lesson 03:** SQL for Analytics - Joins and HAVING Clause
 4. **Lesson 04:** Window Functions
-5. **Lesson 05:** [Data Analysis Project](https://github.com/lvgalvao/Northwind-SQL-Analytics)
+5. **Lesson 05:** [Data Analysis Project I](https://github.com/lvgalvao/Northwind-SQL-Analytics)
 6. **Lesson 06:** CTE vs Subqueries vs Views vs Temporary Tables vs Materialized Views
 7. **Lesson 07:** Table creation
 8. **Lesson 08:** Stored Procedures
@@ -75,7 +75,7 @@ Follow these steps to explore the materials and run the examples:
    - The `scripts` folder contains an `init.sql` script that populates the PostgreSQL database with the Northwind tables provided by Microsoft during the build process.
    - To start the services, run:
      ```bash
-     docker compose build && docker compose up
+     docker compose up
      ```
 
 5. **Log in to PgAdmin:**  

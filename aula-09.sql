@@ -1,3 +1,4 @@
+--============================== Exercise 1 ==============================--
 CREATE TABLE employees (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(100),
@@ -41,3 +42,94 @@ EXECUTE FUNCTION salary_register_audit();
 UPDATE employees
 SET salary = 7000.00
 WHERE name = 'Ana';
+
+--============================== Exercise 2 ==============================--
+CREATE TABLE products (
+	product_code INT PRIMARY KEY,
+	description VARCHAR(50) UNIQUE,
+	available_quantity INT NOT NULL DEFAULT 0	
+);
+CREATE TABLE sales_registry(
+	sale_code SERIAL PRIMARY KEY,
+	product_code INT,
+	sale_quantity INT,
+	FOREIGN KEY (product_code) REFERENCES products(product_code) ON DELETE CASCADE
+);
+INSERT INTO products VALUES (1, 'Basic', 10);
+INSERT INTO products VALUES (2, 'Data', 5);
+INSERT INTO products VALUES (3, 'Summer', 15);
+
+CREATE FUNCTION func_verify_stock()
+RETURNS TRIGGER
+AS $$
+DECLARE
+    init_quantity INTEGER;
+BEGIN
+    SELECT available_quantity INTO init_quantity
+    FROM products 
+    WHERE product_code = NEW.product_code;
+
+    IF init_quantity < NEW.sale_quantity THEN
+        RAISE EXCEPTION 'Not enough quantity in stock!';
+    ELSE
+        UPDATE products 
+        SET available_quantity = (available_quantity - NEW.sale_quantity)
+        WHERE product_code = NEW.product_code;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_verify_stock
+BEFORE INSERT ON sales_registry
+FOR EACH ROW
+EXECUTE FUNCTION func_verify_stock();
+
+INSERT INTO sales_registry (product_code, sale_quantity) VALUES (1, 10);
+INSERT INTO sales_registry (product_code, sale_quantity) VALUES (1, 100);
+
+--============================== Project ==============================--
+CREATE MATERIALIZED VIEW sales_accumulated_monthly_mv AS
+	SELECT
+		EXTRACT(YEAR FROM o.order_date) AS year,
+		EXTRACT(MONTH FROM o.order_date) AS month,
+		SUM((od.unit_price * od.quantity) - od.discount*(od.unit_price * od.quantity)) As total_sales
+	FROM
+		orders o
+	INNER JOIN
+		order_details od
+	ON
+		o.order_id = od.order_id
+	GROUP BY
+		EXTRACT(YEAR FROM o.order_date),
+		EXTRACT(MONTH FROM o.order_date)
+	ORDER BY
+		year,
+		month
+
+CREATE OR REPLACE FUNCTION refresh_mv_sales_accumulated()
+RETURNS TRIGGER AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW sales_accumulated_monthly_mv;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_refresh_sales_accumulated_monthly_mv_order_details
+AFTER INSERT OR UPDATE OR DELETE ON order_details
+FOR EACH ROW EXECUTE FUNCTION refresh_mv_sales_accumulated();
+
+CREATE TRIGGER trg_refresh_sales_accumulated_monthly_mv_orders
+AFTER INSERT OR UPDATE OR DELETE ON orders
+FOR EACH ROW EXECUTE FUNCTION refresh_mv_sales_accumulated();
+
+INSERT INTO orders VALUES (11078, 'RATTC', 1, '1999-05-06', '1999-06-03', NULL, 2, 8.52999973, 'Rattlesnake Canyon Grocery', '2817 Milton Dr.', 'Albuquerque', 'NM', '87110', 'USA'); 
+INSERT INTO order_details VALUES (11078, 77, 25, 23, 0);
+INSERT INTO order_details VALUES (11078, 24, 23, 10, 0);
+INSERT INTO order_details VALUES (11078, 35, 56, 5, 0.15);
+
+SELECT
+	*
+FROM
+	sales_accumulated_monthly_mv
